@@ -84,3 +84,33 @@ def most_frequent(list):
     """
     return max(set(list), key = list.count)
 # endregion 1
+
+
+# region datetime
+from datetime import date, time, datetime
+import dateutil
+
+def now_datetime():
+    return datetime.now()
+
+def now_string():
+    datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+def string_2_date(val:'str', format="%Y-%m-%d") -> date: # a shorter version for Utils.normalize_to_date(obj)
+    if not val: return None
+    d = datetime.strptime(val, format)
+    return d
+
+def string_2_datetime(val:'str', format="%Y-%m-%d %H:%M:%S") -> datetime:
+    if not val: return None
+    datetime.strptime(val, format)
+
+def datetime_2_string(dt, format="%Y-%m-%d %H:%M:%S"):
+    if not dt: return ''
+    return dt.strftime(format)
+
+def date_2_string(d, format="%Y-%m-%d"):
+    if not d: return ''
+    return d.strftime(format)
+
+# endregion
