@@ -1,4 +1,4 @@
-# region 1
+#region 1
 """
 From https://towardsdatascience.com/30-helpful-python-snippets-that-you-can-learn-in-30-seconds-or-less-69bb49204172
 """
@@ -63,7 +63,8 @@ def merge_dictionaries(a, b):
         :param b: { 'y': 3, 'z': 4}
         :return:  {'y': 3, 'x': 1, 'z': 4}
     """
-   return {**a, **b}
+
+   return {a, b}
 
 def to_dictionary(keys, values):
     """
@@ -83,10 +84,10 @@ def most_frequent(list):
         :return     : 2
     """
     return max(set(list), key = list.count)
-# endregion 1
+#endregion 1
 
 
-# region datetime
+#region datetime
 from datetime import date, time, datetime
 import dateutil
 
@@ -113,4 +114,71 @@ def date_2_string(d, format="%Y-%m-%d"):
     if not d: return ''
     return d.strftime(format)
 
-# endregion
+#endregion
+
+
+#region read excel file
+import openpyxl
+
+def validate_load_file(path):
+    """
+    check that system can load the file
+    """
+    try:
+        openpyxl.load_workbook(path)
+        return True, None
+    except Exception as e:
+        return False, f'Loading xlsx failed at file {path}\nException:\n{str(e)}'
+
+COLUMN_FIELD_MAP = {
+    'Company'    : 'company_name',
+    'User'       : 'user_name',
+    'Mobile'     : 'mobile',
+    'Email'      : 'email',
+    'Start Date' : 'start_date',
+}
+def load_excel(excel_file):
+    wb = openpyxl.load_workbook(excel_file)  # wb aka. workbook
+    ws = wb.active
+
+    # load header row
+    max_column = ws.max_column
+
+    row_start = 1
+    headers   = [ws.cell(row=row_start, column=j).value for j in range(1, max_column+1) ]
+
+    # load column vs field mapping
+    row_start += 1
+    fields = [ h and COLUMN_FIELD_MAP.get(str(h).strip()) for h in headers ]  # h aka header
+    parser = {
+        'company_name' : lambda v : v.strip().lower() if v else None,  # v aka value
+        'email'        : lambda v : v.strip().lower() if v else None,
+        'start_date'   : lambda v : datetime.strptime(str(v).strip(), '%Y-%m-%d 00:00:00').date() if v else None,
+
+        'always_strip' : lambda v : str(v).strip() if v else None,
+    }
+
+    #region load and parse row by row
+    row_end = ws.max_row
+
+    # load raw records
+    raw_records =[]
+    for r in range(row_start, row_end+1):  # r aka row
+        row_values = [ws.cell(row=r, column=c).value for c in range(1, max_column+1) ]  # load current row 's values
+        raw_record = dict(zip(fields, row_values))  # create dict :raw_record from 2 lists :fields and :row_values ref. https://stackoverflow.com/a/209854/248616
+
+        # parse raw values to field values
+        for field, value in raw_record.items():
+
+            # load parser
+            p = parser.get(field, parser['always_strip'])  # p aka parser_by_key :k - if not listed in :parser then use :always_strip parser
+
+            # do parsing
+            raw_record[field] = p(value)
+
+        # store new record
+        raw_records.append(raw_record)
+    #endregion
+
+    return raw_records
+#endregion
