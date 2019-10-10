@@ -64,7 +64,7 @@ def merge_dictionaries(a, b):
         :return:  {'y': 3, 'x': 1, 'z': 4}
     """
 
-   return {a, b}
+    return {**a, **b}
 
 def to_dictionary(keys, values):
     """
